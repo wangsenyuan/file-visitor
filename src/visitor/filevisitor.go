@@ -76,6 +76,7 @@ func visitFile(ctx base.Context, handler base.Handler, src, dest string) error {
 	}
 
 	defer file.Close()
+	defer handler.AfterHandleFile(ctx, dest)
 
 	scanner := bufio.NewReader(file)
 
@@ -96,7 +97,6 @@ func visitFile(ctx base.Context, handler base.Handler, src, dest string) error {
 		}
 	}
 	//fmt.Printf("[debug] --- file %s is processed\n", name)
-	defer handler.AfterHandleFile(ctx, dest)
 
 	return nil
 }
