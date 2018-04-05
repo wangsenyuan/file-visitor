@@ -52,6 +52,21 @@ func (ctx Context) GetOldNamespace() string {
 func (ctx Context) GetNewNamespace() string {
 	return ctx.nn.val
 }
+func (ctx Context) IsValid() bool {
+	if len(ctx.GetDest()) == 0 {
+		return false
+	}
+
+	if !ctx.IsDir() && !ctx.IsFile() && !ctx.IsStd() {
+		return false
+	}
+
+	if len(ctx.GetSrc()) == 0 {
+		return false
+	}
+
+	return true
+}
 
 type Out struct {
 	tp string
