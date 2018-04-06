@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"sort"
 	"io"
+	"strings"
 )
 
 func Visit(ctx base.Context, handler base.Handler) error {
@@ -47,6 +48,9 @@ func visitDir(ctx base.Context, handler base.Handler, src, dest string) error {
 	sort.Sort(util.Files(files))
 
 	for _, file := range files {
+		if strings.HasPrefix(file.Name(), ".") {
+			continue
+		}
 		if file.IsDir() {
 			err := visitDir(ctx, handler, src+"/"+file.Name(), dest+"/"+file.Name())
 			if err != nil {
