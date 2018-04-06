@@ -24,7 +24,7 @@ func (this *FileHandler) BeforeHandleDir(ctx base.Context, dir string) error {
 }
 
 func (this *FileHandler) BeforeHandleFile(ctx base.Context, file string) error {
-	_, err := this.Writer.WriteString(fmt.Sprintf("---", file))
+	_, err := this.Writer.WriteString(fmt.Sprintf("---\n", file))
 	return err
 }
 
