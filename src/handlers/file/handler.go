@@ -16,26 +16,15 @@ func NewHandler(writer *bufio.Writer) *FileHandler {
 }
 
 func (this *FileHandler) BeforeProcess(ctx base.Context) error {
-	if !ctx.IsComment() {
-		return nil
-	}
-	_, err := this.Writer.WriteString("-------- begin --------\n")
-	return err
+	return nil
 }
 
 func (this *FileHandler) BeforeHandleDir(ctx base.Context, dir string) error {
-	if !ctx.IsComment() {
-		return nil
-	}
-	_, err := this.Writer.WriteString(fmt.Sprintf("------- begin dir %s --------\n", dir))
-	return err
+	return nil
 }
 
 func (this *FileHandler) BeforeHandleFile(ctx base.Context, file string) error {
-	if !ctx.IsComment() {
-		return nil
-	}
-	_, err := this.Writer.WriteString(fmt.Sprintf("------- begin file %s --------\n", file))
+	_, err := this.Writer.WriteString(fmt.Sprintf("---", file))
 	return err
 }
 
@@ -52,7 +41,7 @@ func replaceNamespace(ctx base.Context, s string) string {
 		return s
 	}
 
-	st := strings.Trim(s, " \n")
+	st := strings.Trim(s, " \n\t")
 	tp := fmt.Sprintf("namespace: %s", ctx.GetOldNamespace())
 
 	if st != tp {
@@ -63,28 +52,13 @@ func replaceNamespace(ctx base.Context, s string) string {
 }
 
 func (this *FileHandler) AfterHandleFile(ctx base.Context, file string) error {
-	if !ctx.IsComment() {
-		return nil
-	}
-	_, err := this.Writer.WriteString(fmt.Sprintf("------- done file %s --------\n", file))
-	return err
+	return nil
 }
 
 func (this *FileHandler) AfterHandleDir(ctx base.Context, dir string) error {
-	if !ctx.IsComment() {
-		return nil
-	}
-	_, err := this.Writer.WriteString(fmt.Sprintf("------- done dir %s --------\n", dir))
-	return err
+	return nil
 }
 
 func (this *FileHandler) AfterProcess(ctx base.Context) error {
-	if ctx.IsComment() {
-		_, err := this.Writer.WriteString(fmt.Sprintf("------- done --------\n"))
-		if err != nil {
-			return err
-		}
-	}
-
 	return this.Writer.Flush()
 }
