@@ -2,17 +2,16 @@ package file
 
 import (
 	"../../base"
-	"fmt"
 	"bufio"
-	"strings"
 )
 
 type FileHandler struct {
-	Writer *bufio.Writer
+	Writer         *bufio.Writer
+	LineProcessors []func(string) string
 }
 
-func NewHandler(writer *bufio.Writer) *FileHandler {
-	return &FileHandler{Writer: writer}
+func NewHandler(writer *bufio.Writer, lineProcessors []func(string) string) *FileHandler {
+	return &FileHandler{writer, lineProcessors}
 }
 
 func (this *FileHandler) BeforeProcess(ctx base.Context) error {
@@ -29,26 +28,13 @@ func (this *FileHandler) BeforeHandleFile(ctx base.Context, file string) error {
 }
 
 func (this *FileHandler) HandleFileContent(ctx base.Context, line string) error {
-	_, err := this.Writer.WriteString(replaceNamespace(ctx, line))
+	if len(this.LineProcessors) != 0 {
+		for _, processor := range this.LineProcessors {
+			line = processor(line)
+		}
+	}
+	_, err := this.Writer.WriteString(line)
 	return err
-}
-func replaceNamespace(ctx base.Context, s string) string {
-	if len(s) == 0 {
-		return s
-	}
-
-	if len(ctx.GetOldNamespace()) == 0 || len(ctx.GetNewNamespace()) == 0 {
-		return s
-	}
-
-	st := strings.Trim(s, " \n\t")
-	tp := fmt.Sprintf("namespace: %s", ctx.GetOldNamespace())
-
-	if st != tp {
-		return s
-	}
-
-	return strings.Replace(s, tp, fmt.Sprintf("namespace: %s", ctx.GetNewNamespace()), 1)
 }
 
 func (this *FileHandler) AfterHandleFile(ctx base.Context, file string) error {

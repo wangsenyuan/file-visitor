@@ -9,16 +9,17 @@ import (
 )
 
 type DirHandler struct {
-	fileHandler *file.FileHandler
-	currentFile *os.File
+	fileHandler    *file.FileHandler
+	currentFile    *os.File
+	LineProcessors []func(string) string
 }
 
-func NewHandler() *DirHandler {
-	return &DirHandler{}
+func NewHandler(lineProcessors []func(string) string) *DirHandler {
+	return &DirHandler{LineProcessors: lineProcessors}
 }
 
 func (this *DirHandler) BeforeProcess(ctx base.Context) error {
-	return createDir(ctx.GetDest())
+	return createDir(ctx.GetDest().GetName())
 }
 func createDir(dest string) error {
 	_, err := os.Stat(dest)
@@ -46,7 +47,7 @@ func (this *DirHandler) BeforeHandleFile(ctx base.Context, name string) error {
 		return err
 	}
 
-	fileHandler := file.NewHandler(bufio.NewWriter(out))
+	fileHandler := file.NewHandler(bufio.NewWriter(out), this.LineProcessors)
 
 	this.currentFile = out
 	this.fileHandler = fileHandler

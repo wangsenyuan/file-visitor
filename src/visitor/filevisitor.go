@@ -17,17 +17,17 @@ func Visit(ctx base.Context, handler base.Handler) error {
 		return err
 	}
 
-	src := ctx.GetSrc()
+	src := ctx.GetSrc().GetName()
 
 	if ok, err := util.IsFile(src); err != nil {
 		return err
 	} else if ok {
-		tmp := visitFile(ctx, handler, src, ctx.GetDest())
+		tmp := visitFile(ctx, handler, src, ctx.GetDest().GetName())
 		if tmp != nil {
 			return tmp
 		}
 	} else {
-		tmp := visitDir(ctx, handler, src, ctx.GetDest())
+		tmp := visitDir(ctx, handler, src, ctx.GetDest().GetName())
 		if tmp != nil {
 			return tmp
 		}
@@ -51,6 +51,11 @@ func visitDir(ctx base.Context, handler base.Handler, src, dest string) error {
 		if strings.HasPrefix(file.Name(), ".") {
 			continue
 		}
+
+		if !ctx.GetEnv().ShouldIncludeFile(src, file.Name()) {
+			continue
+		}
+
 		if file.IsDir() {
 			err := visitDir(ctx, handler, src+"/"+file.Name(), dest+"/"+file.Name())
 			if err != nil {

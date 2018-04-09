@@ -1,0 +1,11 @@
+env:
+  folder: 00-env
+  file: dev
+src:
+  name: /Users/wangsenyuan/git/work/maycur-k8s-deployment/deployment
+dest:
+  type: file
+  name: /tmp/maycur.yaml
+  ns-processor:
+    old-ns: maycur
+    new-ns: dev

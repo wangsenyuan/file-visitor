@@ -10,49 +10,68 @@ import (
 	"os"
 	"bufio"
 	"fmt"
+	"./base/yaml"
+	"./lineprocessors"
 )
 
-var out = base.OutFlag()
-var dest = base.DestFlag()
-var src = base.SrcFlag()
-var comment = base.CommentFlag()
-var on = base.OldNamepsaceFlag()
-var nn = base.NewNamepsaceFlag()
+var configFlag = yaml.ConfigOptionFlag()
+var helpFlag = base.HelpFlag()
 
 func main() {
 	flag.Parse()
 
-	ctx := base.NewContext(src, out, dest, comment, on, nn)
-
-	if !ctx.IsValid() {
-		flag.Usage()
+	if help(helpFlag) {
 		return
 	}
 
-	err := safeVisit(ctx)
+	ctx, err := yaml.NewContext(configFlag)
+
+	if err != nil {
+		panic(err)
+	}
+
+	err = safeVisit(ctx)
 	if err != nil {
 		panic(err)
 	}
 	//fmt.Println("done processing")
 }
-func safeVisit(ctx base.Context) error {
-	if ctx.IsStd() {
-		return visitor.Visit(ctx, std.NewHandler())
+func help(help *base.Help) bool {
+	if len(help.Value) == 0 {
+		return false
 	}
 
-	if ctx.IsFile() {
-		out, err := os.Create(ctx.GetDest())
+	if help.Value == "usage" {
+		flag.Usage()
+		return true
+	}
+
+	if help.Value == "config-example" {
+		yaml.ShowExample()
+		return true
+	}
+
+	return false
+}
+func safeVisit(ctx base.Context) error {
+	lineProcessors := lineprocessors.CreateLineProcessors(ctx)
+	if ctx.GetDest().GetType() == "std" {
+		return visitor.Visit(ctx, std.NewHandler(lineProcessors))
+	}
+
+	if ctx.GetDest().GetType() == "file" {
+		out, err := os.Create(ctx.GetDest().GetName())
 		if err != nil {
 			return err
 		}
 		defer out.Close()
 
 		writer := bufio.NewWriter(out)
-		return visitor.Visit(ctx, file.NewHandler(writer))
+		return visitor.Visit(ctx, file.NewHandler(writer, lineProcessors))
 	}
 
-	if ctx.IsDir() {
-		return visitor.Visit(ctx, dir.NewHandler())
+	if ctx.GetDest().GetType() == "dir" {
+		return visitor.Visit(ctx, dir.NewHandler(lineProcessors))
 	}
 
 	return fmt.Errorf("no handler found")
