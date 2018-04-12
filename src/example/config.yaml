@@ -1,11 +1,16 @@
 env:
-  folder: 00-env
-  file: dev
+  selected: dev
+  excluded:
+  - dev
+  - uat
+  - prod
+  - mars
+  - explorer
 src:
-  name: /Users/wangsenyuan/git/work/maycur-k8s-deployment/deployment
+  name: ./
 dest:
-  type: file
-  name: /tmp/maycur.yaml
+  type: dir
+  name: /tmp/maycur
   ns-processor:
     old-ns: maycur
     new-ns: dev

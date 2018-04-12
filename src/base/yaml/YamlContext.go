@@ -1,37 +1,37 @@
 package yaml
 
 import (
-	"strings"
-	"fmt"
 	"flag"
+	"fmt"
 	"io/ioutil"
-	"gopkg.in/yaml.v2"
+	"strings"
+
 	"../../base"
+	"gopkg.in/yaml.v2"
 )
 
 type Env struct {
-	Folder string
-	File   string
+	Selected string
+	Excluded []string
 }
 
 func (env Env) ShouldIncludeFile(folder, file string) bool {
-	if env.Folder == "" && env.File == "" {
+
+	if len(env.Excluded) == 0 || len(env.Selected) == 0 {
 		return true
 	}
 
-	if env.Folder == "" {
-		return file == env.File
-	}
-
-	if !strings.HasSuffix(folder, "/") {
-		folder += "/"
-	}
-
-	if !strings.HasSuffix(folder, env.Folder) {
+	if strings.HasSuffix(folder, env.Selected) {
 		return true
 	}
 
-	return strings.HasSuffix(folder+file, env.Folder+file)
+	for _, item := range env.Excluded {
+		if strings.HasSuffix(folder, item) {
+			return false
+		}
+	}
+
+	return true
 }
 
 type Src struct {
@@ -47,7 +47,7 @@ type NsProcessor struct {
 	NewNS string `yaml:"new-ns"`
 }
 type Dest struct {
-	Tpe         string      `yaml:"type"`
+	Tpe         string `yaml:"type"`
 	Name        string
 	NsProcessor NsProcessor `yaml:"ns-processor"`
 }
@@ -126,8 +126,8 @@ func NewContext(cfg *ConfigOption) (*Conf, error) {
 func ShowExample() {
 	conf := Conf{
 		Env: Env{
-			Folder: "00-env",
-			File:   "dev",
+			Selected: "dev",
+			Excluded: []string{"dev", "uat", "prod", "mars", "explorer"},
 		},
 		Src: Src{
 			Name: "./",
