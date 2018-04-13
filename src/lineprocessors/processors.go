@@ -7,10 +7,31 @@ import (
 )
 
 func CreateLineProcessors(ctx base.Context) []func(string) string {
-	return []func(string) string{
-		createNSProcess(ctx.GetDest().GetOldNS(), ctx.GetDest().GetNewNS()),
+	processors := make([]func(string) string, 0, 10)
+
+	processors = append(processors, createNSProcess(ctx.GetDest().GetOldNS(), ctx.GetDest().GetNewNS()))
+
+	if ctx.GetDest().IsRemoveCopyright() {
+		processors = append(processors, createCopyrightProcess())
+	}
+
+	if ctx.GetDest().ShouldRemoveComment() {
+		processors = append(processors, createRemoveCommentProcessor())
+	}
+
+	return processors
+}
+
+func createRemoveCommentProcessor() func(string) string {
+	return func(s string) string {
+		sm := strings.TrimLeft(s, " \t")
+		if strings.HasPrefix(sm, "//") {
+			return ""
+		}
+		return s
 	}
 }
+
 func createNSProcess(OldNS, NewNS string) func(string) string {
 	fn := func(s string) string {
 		if len(s) == 0 {
@@ -29,6 +50,18 @@ func createNSProcess(OldNS, NewNS string) func(string) string {
 		}
 
 		return strings.Replace(s, tp, fmt.Sprintf("namespace: %s", NewNS), 1)
+	}
+
+	return fn
+}
+
+func createCopyrightProcess() func(string) string {
+	fn := func(s string) string {
+		sm := strings.ToLower(s)
+		if strings.Contains(sm, "copyright") {
+			return strings.Replace(sm, "copyright", "", -1)
+		}
+		return s
 	}
 
 	return fn

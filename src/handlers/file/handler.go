@@ -8,10 +8,11 @@ import (
 type FileHandler struct {
 	Writer         *bufio.Writer
 	LineProcessors []func(string) string
+	LineCount      int
 }
 
 func NewHandler(writer *bufio.Writer, lineProcessors []func(string) string) *FileHandler {
-	return &FileHandler{writer, lineProcessors}
+	return &FileHandler{writer, lineProcessors, 0}
 }
 
 func (this *FileHandler) BeforeProcess(ctx base.Context) error {
@@ -33,7 +34,13 @@ func (this *FileHandler) HandleFileContent(ctx base.Context, line string) error 
 			line = processor(line)
 		}
 	}
+
+	if len(line) == 0 && ctx.GetDest().ShouldRemoveComment() {
+		return nil
+	}
+
 	_, err := this.Writer.WriteString(line)
+	this.LineCount++
 	return err
 }
 

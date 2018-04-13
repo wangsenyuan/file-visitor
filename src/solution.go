@@ -6,6 +6,7 @@ import (
 	"./handlers/std"
 	"./handlers/file"
 	"./handlers/dir"
+	"./handlers/batch"
 	"./visitor"
 	"os"
 	"bufio"
@@ -72,6 +73,10 @@ func safeVisit(ctx base.Context) error {
 
 	if ctx.GetDest().GetType() == "dir" {
 		return visitor.Visit(ctx, dir.NewHandler(lineProcessors))
+	}
+
+	if ctx.GetDest().GetType() == "batch" {
+		return visitor.Visit(ctx, batch.NewHandler(lineProcessors))
 	}
 
 	return fmt.Errorf("no handler found")

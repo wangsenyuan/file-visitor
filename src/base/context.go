@@ -17,6 +17,7 @@ type EnvInterface interface {
 
 type SrcInterface interface {
 	GetName() string
+	GetSuffix() string
 }
 
 type DestInterface interface {
@@ -24,6 +25,9 @@ type DestInterface interface {
 	GetType() string
 	GetOldNS() string
 	GetNewNS() string
+	IsRemoveCopyright() bool
+	GetFileLineLimit() int
+	ShouldRemoveComment() bool
 }
 
 type Help struct {

@@ -52,6 +52,10 @@ func visitDir(ctx base.Context, handler base.Handler, src, dest string) error {
 			continue
 		}
 
+		//fmt.Printf("[debug] processing %s\n", file.Name())
+
+		//fmt.Printf("src suffix is %s\n", ctx.GetSrc().GetSuffix())
+
 		if !ctx.GetEnv().ShouldIncludeFile(src, file.Name()) {
 			continue
 		}
@@ -62,6 +66,10 @@ func visitDir(ctx base.Context, handler base.Handler, src, dest string) error {
 				return err
 			}
 		} else {
+			if len(ctx.GetSrc().GetSuffix()) > 0 && !strings.HasSuffix(file.Name(), ctx.GetSrc().GetSuffix()) {
+				continue
+			}
+
 			err := visitFile(ctx, handler, src+"/"+file.Name(), dest+"/"+file.Name())
 			if err != nil {
 				return err

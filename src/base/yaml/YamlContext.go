@@ -16,10 +16,11 @@ type Env struct {
 }
 
 func (env Env) ShouldIncludeFile(folder, file string) bool {
-
+	//fmt.Printf("len excluded & selected is %d %d\n", len(env.Excluded), len(env.Selected))
 	if len(env.Excluded) == 0 || len(env.Selected) == 0 {
 		return true
 	}
+	//fmt.Printf("[debug] env should include %s %s\n", folder, file)
 
 	if strings.HasSuffix(folder, env.Selected) {
 		return true
@@ -35,11 +36,16 @@ func (env Env) ShouldIncludeFile(folder, file string) bool {
 }
 
 type Src struct {
-	Name string
+	Name   string
+	Suffix string
 }
 
 func (src Src) GetName() string {
 	return src.Name
+}
+
+func (src Src) GetSuffix() string {
+	return src.Suffix
 }
 
 type NsProcessor struct {
@@ -47,9 +53,12 @@ type NsProcessor struct {
 	NewNS string `yaml:"new-ns"`
 }
 type Dest struct {
-	Tpe         string `yaml:"type"`
-	Name        string
-	NsProcessor NsProcessor `yaml:"ns-processor"`
+	Tpe             string      `yaml:"type"`
+	Name            string
+	NsProcessor     NsProcessor `yaml:"ns-processor"`
+	RemoveCopyright bool        `yaml:"remove-copyright"`
+	FileLineLimit   int         `yaml:"file-line-limit"`
+	RemoveComment   bool        `yaml:"remove-comment"`
 }
 
 func (dest Dest) GetType() string {
@@ -66,6 +75,18 @@ func (dest Dest) GetOldNS() string {
 
 func (dest Dest) GetNewNS() string {
 	return dest.NsProcessor.NewNS
+}
+
+func (dest Dest) IsRemoveCopyright() bool {
+	return dest.RemoveCopyright
+}
+
+func (dest Dest) GetFileLineLimit() int {
+	return dest.FileLineLimit
+}
+
+func (dest Dest) ShouldRemoveComment() bool {
+	return dest.RemoveComment
 }
 
 type Conf struct {
@@ -134,11 +155,13 @@ func ShowExample() {
 		},
 		Dest: Dest{
 			Name: "/tmp/maycur",
-			Tpe:  "dir",
+			Tpe:  "batch",
 			NsProcessor: NsProcessor{
 				OldNS: "maycur",
 				NewNS: "dev",
 			},
+			RemoveCopyright: true,
+			FileLineLimit:   4000,
 		},
 	}
 

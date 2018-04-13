@@ -12,5 +12,5 @@ type StdHandler struct {
 
 func NewHandler(lineProcessors []func(string) string) *StdHandler {
 	writer := bufio.NewWriter(os.Stdout)
-	return &StdHandler{file.FileHandler{writer, lineProcessors}}
+	return &StdHandler{file.FileHandler{writer, lineProcessors, 0}}
 }
